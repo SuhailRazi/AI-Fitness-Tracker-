@@ -1,56 +1,77 @@
-# Welcome to your Expo app 👋
+# Workout Tracker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+An offline-first mobile app for tracking gym, calisthenics, cardio, and mobility training, with
+progress analytics and an optional AI assistant grounded in your saved records.
 
-## Get started
+**Status: Phase 1 (foundation).** Navigation, the design system, configuration, linting, and test
+tooling are in place. The database, exercise catalog, authentication, workout logging, analytics, and
+AI assistant are not built yet; the corresponding tabs say which phase delivers them.
 
-1. Install dependencies
+## Stack
 
-   ```bash
-   npm install
-   ```
+| Concern       | Choice                                                     |
+| ------------- | ---------------------------------------------------------- |
+| App framework | Expo SDK 58, React Native 0.88, React 19.3                 |
+| Language      | TypeScript 6 (`strict`, `noUncheckedIndexedAccess`)        |
+| Navigation    | Expo Router (file-based, typed routes), JavaScript tabs    |
+| Unit tests    | Vitest — pure TypeScript modules (`*.test.ts`)             |
+| UI tests      | jest-expo + React Native Testing Library 14 (`*.test.tsx`) |
+| Lint/format   | ESLint 9 flat config (`eslint-config-expo`) + Prettier     |
+| Planned       | Supabase (Auth, Postgres, Edge Functions), SQLite, Maestro |
 
-2. Start the app
+## Getting started
 
-   ```bash
-   npx expo start
-   ```
+Requires Node 20.19 or newer (developed on Node 24).
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```sh
+npm install
+cp .env.example .env.local   # optional in Phase 1; the app runs without a backend
+npm start                    # then press i / a / w, or scan the QR code with Expo Go
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+## Scripts
 
-### Other setup steps
+| Script                    | What it does                                        |
+| ------------------------- | --------------------------------------------------- |
+| `npm run typecheck`       | `tsc --noEmit`                                      |
+| `npm run lint`            | ESLint via `expo lint` (includes Prettier rules)    |
+| `npm run format`          | Prettier write                                      |
+| `npm test`                | Vitest unit tests, then Jest component/router tests |
+| `npm run test:unit`       | Vitest only                                         |
+| `npm run test:components` | Jest only                                           |
+| `npm run doctor`          | `expo-doctor` dependency and config checks          |
+| `npm run check`           | Typecheck, lint, format check, and all tests        |
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Project structure
 
-## Learn more
+```
+src/
+  app/                 Routes only (Expo Router). No tests or shared code here.
+    (tabs)/            Home, Workout, Exercises, Progress, Coach
+    settings.tsx       Theme preference
+    design-system.tsx  Dev-only component gallery (redirects home in production)
+  components/
+    ui/                Design-system primitives (Text, Button, Card, Chip, ...)
+  config/              Typed, validated public environment config
+  lib/                 Pure helpers (no React Native imports)
+  theme/               Tokens, light/dark themes, provider, WCAG contrast helpers
+  test-utils/          Shared render helpers for component tests
+  __tests__/           Router integration tests
+docs/                  Architecture and phase notes
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Planned additions are described in [docs/architecture.md](docs/architecture.md).
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Testing conventions
 
-## Join the community
+- `*.test.ts` files run under **Vitest** and must not import `react-native`. Keep domain logic
+  (calculations, validation, sync rules) in these pure modules.
+- `*.test.tsx` files run under **Jest** with the `jest-expo` preset. Use `renderWithTheme` from
+  `src/test-utils/render.tsx`, or `renderRouter` from `expo-router/testing-library` for navigation.
+- Never place tests inside `src/app/`; every file there is treated as a route.
 
-Join our community of developers creating universal apps.
+## Security notes
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Every `EXPO_PUBLIC_*` variable is embedded in the app bundle. `src/config/parse-env.ts` refuses to
+start if a Supabase secret or service-role key is supplied. AI provider keys must live only in
+server-side Edge Function secrets.

@@ -34,6 +34,22 @@ Run lint and typecheck before declaring any task done.
 Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
 Docs: https://docs.expo.dev/eas/index.md
 
+## Project conventions
+
+- Run `npm run check` (typecheck, lint, format check, Vitest, Jest) before declaring work done.
+- `*.test.ts` runs under Vitest and must not import `react-native`; `*.test.tsx` runs under jest-expo.
+- Pure domain logic (calculations, validation, sync rules) must stay free of React Native imports.
+- UI uses semantic colors from `useTheme()` and primitives from `@/components/ui`; never raw palette values.
+- Never put privileged keys in `EXPO_PUBLIC_*` variables. See `docs/architecture.md` for the phase plan.
+
+## Project conventions
+
+- Run `npm run check` (typecheck, lint, format check, Vitest, Jest) before declaring work done.
+- `*.test.ts` runs under Vitest and must not import `react-native`; `*.test.tsx` runs under jest-expo.
+- Pure domain logic (calculations, validation, sync rules) must stay free of React Native imports.
+- UI uses semantic colors from `useTheme()` and primitives from `@/components/ui`; never raw palette values.
+- Never put privileged keys in `EXPO_PUBLIC_*` variables. See `docs/architecture.md` for the phase plan.
+
 ## Rules
 
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
